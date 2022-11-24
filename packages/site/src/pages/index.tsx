@@ -1,18 +1,19 @@
 import { useContext } from 'react';
 import styled from 'styled-components';
+import * as PushAPI from '@pushprotocol/restapi';
 import { MetamaskActions, MetaMaskContext } from '../hooks';
 import {
   connectSnap,
   getSnap,
-  sendHello,
+  showNotifications,
   shouldDisplayReconnectButton,
 } from '../utils';
 import {
   ConnectButton,
   InstallFlaskButton,
   ReconnectButton,
-  SendHelloButton,
   Card,
+  ShowNotificationsButton,
 } from '../components';
 
 const Container = styled.div`
@@ -117,9 +118,30 @@ const Index = () => {
     }
   };
 
-  const handleSendHelloClick = async () => {
+  async function fetchNotifications() {
+    const fetchedNotifications = await PushAPI.user.getFeeds({
+      user: 'eip155:5:0xbe68eE8a43ce119a56625d7E645AbAF74652d5E1', // user address in CAIP
+      env: 'staging',
+    });
+
+    // Parse the notification fetched
+    console.log('Notifications are ', fetchedNotifications);
+    return fetchedNotifications as string;
+    // This is used to render the text present in a notification body as a JSX element
+    // <NotificationItem
+    //   notificationTitle={parsedResponse.title}
+    //   notificationBody={parsedResponse.message}
+    //   cta={parsedResponse.cta}
+    //   app={parsedResponse.app}
+    //   icon={parsedResponse.icon}
+    //   image={parsedResponse.image}
+    // />;
+  }
+
+  const handleShowNotificationsClick = async () => {
     try {
-      await sendHello();
+      await showNotifications();
+      await fetchNotifications();
     } catch (e) {
       console.error(e);
       dispatch({ type: MetamaskActions.SetError, payload: e });
@@ -185,12 +207,11 @@ const Index = () => {
         )}
         <Card
           content={{
-            title: 'Send Hello message',
-            description:
-              'Display a custom message within a confirmation screen in MetaMask.',
+            title: 'Show Push Notifications',
+            description: 'Clicking this button will show  snap ',
             button: (
-              <SendHelloButton
-                onClick={handleSendHelloClick}
+              <ShowNotificationsButton
+                onClick={handleShowNotificationsClick}
                 disabled={!state.installedSnap}
               />
             ),

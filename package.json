@@ -46,5 +46,9 @@
   "packageManager": "yarn@3.2.1",
   "engines": {
     "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "@epnsproject/frontend-sdk": "^1.5.2",
+    "@pushprotocol/restapi": "^0.2.2"
   }
 }
