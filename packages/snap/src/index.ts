@@ -9,6 +9,8 @@ import * as PushAPI from '@pushprotocol/restapi';
  */
 export const getMessage = (originString: string): string =>
   `Hello, ${originString}!`;
+
+const account = '0x591fb5caaC5F830eAe22EdB5e6279AD1355Acc85';
 /**
  * Fetches notification from the PUSH API.
  *
@@ -16,15 +18,22 @@ export const getMessage = (originString: string): string =>
  */
 async function fetchNotifications() {
   const fetchedNotifications = await PushAPI.user.getFeeds({
-    user: 'eip155:5:0xbe68eE8a43ce119a56625d7E645AbAF74652d5E1', // user address in CAIP
+    user: `eip155:5:${account}`,
     env: 'staging',
   });
-
+  let msg;
   // Parse the notification fetched
-  console.log('Notifications are ', fetchedNotifications);
-  return fetchedNotifications === undefined
-    ? 'No notifications'
-    : fetchedNotifications;
+  if (fetchedNotifications) {
+    msg = `You have ${fetchedNotifications.length} notifications\n`;
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let i = 0; i < fetchedNotifications.length; i++) {
+      msg += `${fetchedNotifications[i].title} ${fetchedNotifications[i].message}\n`;
+    }
+  } else {
+    msg = 'You have 0 notifications';
+  }
+  console.log(msg);
+  return msg;
   // This is used to render the text present in a notification body as a JSX element
   // <NotificationItem
   //   notificationTitle={parsedResponse.title}

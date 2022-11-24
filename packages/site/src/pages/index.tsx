@@ -120,12 +120,19 @@ const Index = () => {
 
   async function fetchNotifications() {
     const fetchedNotifications = await PushAPI.user.getFeeds({
-      user: 'eip155:5:0xbe68eE8a43ce119a56625d7E645AbAF74652d5E1', // user address in CAIP
+      user: 'eip155:5:0x591fb5caaC5F830eAe22EdB5e6279AD1355Acc85', // user address in CAIP
       env: 'staging',
     });
 
     // Parse the notification fetched
-    console.log('Notifications are ', fetchedNotifications);
+    let msg = `You have ${fetchedNotifications.length} notifications\n`;
+    if (fetchedNotifications.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < fetchedNotifications.length; i++) {
+        msg += `${fetchedNotifications[i].title} ${fetchedNotifications[i].message}\n`;
+      }
+    }
+    console.log(msg);
     return fetchedNotifications as string;
     // This is used to render the text present in a notification body as a JSX element
     // <NotificationItem
