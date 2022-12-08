@@ -1,6 +1,5 @@
 import { OnRpcRequestHandler } from '@metamask/snap-types';
-import * as PushAPI from '@pushprotocol/restapi';
-
+import { fetchUrl } from './fetchUrl';
 /**
  * Get a message from the origin. For demonstration purposes only.
  *
@@ -10,24 +9,21 @@ import * as PushAPI from '@pushprotocol/restapi';
 export const getMessage = (originString: string): string =>
   `Hello, ${originString}!`;
 
-const account = '0x591fb5caaC5F830eAe22EdB5e6279AD1355Acc85';
 /**
  * Fetches notification from the PUSH API.
  *
  * @returns A message based on the origin.
  */
 async function fetchNotifications() {
-  const fetchedNotifications = await PushAPI.user.getFeeds({
-    user: `eip155:5:${account}`,
-    env: 'staging',
-  });
-  let msg;
+  const feedsUrl = `https://backend-staging.epns.io/apis/v1/users/eip155:5:0x04c755E1574F33B6C0747Be92DfE1f3277FCC0A9/feeds`;
+  let fetchedNotifications: any = await fetchUrl(feedsUrl);
+  fetchedNotifications = fetchedNotifications?.feeds;
   // Parse the notification fetched
-  if (fetchedNotifications) {
-    msg = `You have ${fetchedNotifications.length} notifications\n`;
+  let msg = `You have ${fetchedNotifications.length} notifications\n`;
+  if (fetchedNotifications.length > 0) {
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < fetchedNotifications.length; i++) {
-      msg += `${fetchedNotifications[i].title} ${fetchedNotifications[i].message}\n`;
+      msg += `${fetchedNotifications[i].sender} ${fetchedNotifications[i].payload.data.amsg}\n`;
     }
   } else {
     msg = 'You have 0 notifications';

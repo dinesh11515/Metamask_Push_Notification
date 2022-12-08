@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import styled from 'styled-components';
-import * as PushAPI from '@pushprotocol/restapi';
+import { fetchUrl } from '../utils/fetchUrl';
 import { MetamaskActions, MetaMaskContext } from '../hooks';
 import {
   connectSnap,
@@ -119,21 +119,21 @@ const Index = () => {
   };
 
   async function fetchNotifications() {
-    const fetchedNotifications = await PushAPI.user.getFeeds({
-      user: 'eip155:5:0x591fb5caaC5F830eAe22EdB5e6279AD1355Acc85', // user address in CAIP
-      env: 'staging',
-    });
-
+    const feedsUrl = `https://backend-staging.epns.io/apis/v1/users/eip155:5:0x04c755E1574F33B6C0747Be92DfE1f3277FCC0A9/feeds`;
+    let fetchedNotifications: any = await fetchUrl(feedsUrl);
+    fetchedNotifications = fetchedNotifications?.feeds;
     // Parse the notification fetched
     let msg = `You have ${fetchedNotifications.length} notifications\n`;
     if (fetchedNotifications.length > 0) {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < fetchedNotifications.length; i++) {
-        msg += `${fetchedNotifications[i].title} ${fetchedNotifications[i].message}\n`;
+        msg += `${fetchedNotifications[i].sender} ${fetchedNotifications[i].payload.data.amsg}\n`;
       }
     }
     console.log(msg);
+    console.log(fetchedNotifications);
     return fetchedNotifications as string;
+    // console.log(fetchedNotifications);
     // This is used to render the text present in a notification body as a JSX element
     // <NotificationItem
     //   notificationTitle={parsedResponse.title}
