@@ -104,6 +104,12 @@ export const ShowNotificationsButton = (
   return <Button {...props}>Show Notifications</Button>;
 };
 
+export const LatestNotificationsButton = (
+  props: ComponentProps<typeof Button>,
+) => {
+  return <Button {...props}>Send Notifications</Button>;
+};
+
 export const HeaderButtons = ({
   state,
   onConnectClick,

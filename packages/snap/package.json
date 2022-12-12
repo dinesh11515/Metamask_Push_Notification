@@ -58,6 +58,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@pushprotocol/restapi": "^0.2.2"
+    "@pushprotocol/restapi": "^0.2.2",
+    "ethers": "^5.7.2"
   }
 }

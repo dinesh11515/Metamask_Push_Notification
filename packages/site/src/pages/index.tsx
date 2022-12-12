@@ -1,11 +1,12 @@
 import { useContext } from 'react';
 import styled from 'styled-components';
-import { fetchUrl } from '../utils/fetchUrl';
 import { MetamaskActions, MetaMaskContext } from '../hooks';
 import {
   connectSnap,
   getSnap,
   showNotifications,
+  latestNotifications,
+  popUpNotifications,
   shouldDisplayReconnectButton,
 } from '../utils';
 import {
@@ -14,6 +15,7 @@ import {
   ReconnectButton,
   Card,
   ShowNotificationsButton,
+  LatestNotificationsButton,
 } from '../components';
 
 const Container = styled.div`
@@ -118,37 +120,27 @@ const Index = () => {
     }
   };
 
-  async function fetchNotifications() {
-    const feedsUrl = `https://backend-staging.epns.io/apis/v1/users/eip155:5:0x04c755E1574F33B6C0747Be92DfE1f3277FCC0A9/feeds`;
-    let fetchedNotifications: any = await fetchUrl(feedsUrl);
-    fetchedNotifications = fetchedNotifications?.feeds;
-    // Parse the notification fetched
-    let msg = `You have ${fetchedNotifications.length} notifications\n`;
-    if (fetchedNotifications.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let i = 0; i < fetchedNotifications.length; i++) {
-        msg += `${fetchedNotifications[i].sender} ${fetchedNotifications[i].payload.data.amsg}\n`;
-      }
-    }
-    console.log(msg);
-    console.log(fetchedNotifications);
-    return fetchedNotifications as string;
-    // console.log(fetchedNotifications);
-    // This is used to render the text present in a notification body as a JSX element
-    // <NotificationItem
-    //   notificationTitle={parsedResponse.title}
-    //   notificationBody={parsedResponse.message}
-    //   cta={parsedResponse.cta}
-    //   app={parsedResponse.app}
-    //   icon={parsedResponse.icon}
-    //   image={parsedResponse.image}
-    // />;
-  }
-
   const handleShowNotificationsClick = async () => {
     try {
       await showNotifications();
-      await fetchNotifications();
+    } catch (e) {
+      console.error(e);
+      dispatch({ type: MetamaskActions.SetError, payload: e });
+    }
+  };
+
+  const handleLatestNotificationsClick = async () => {
+    try {
+      await latestNotifications();
+    } catch (e) {
+      console.error(e);
+      dispatch({ type: MetamaskActions.SetError, payload: e });
+    }
+  };
+
+  const handlePopupNotificationsClick = async () => {
+    try {
+      await popUpNotifications();
     } catch (e) {
       console.error(e);
       dispatch({ type: MetamaskActions.SetError, payload: e });
@@ -219,6 +211,44 @@ const Index = () => {
             button: (
               <ShowNotificationsButton
                 onClick={handleShowNotificationsClick}
+                disabled={!state.installedSnap}
+              />
+            ),
+          }}
+          disabled={!state.installedSnap}
+          fullWidth={
+            state.isFlask &&
+            Boolean(state.installedSnap) &&
+            !shouldDisplayReconnectButton(state.installedSnap)
+          }
+        />
+        <Card
+          content={{
+            title: 'Pop up Notification from Metamask',
+            description:
+              'Clicking this button will pop up notification from Metamask',
+            button: (
+              <ShowNotificationsButton
+                onClick={handlePopupNotificationsClick}
+                disabled={!state.installedSnap}
+              />
+            ),
+          }}
+          disabled={!state.installedSnap}
+          fullWidth={
+            state.isFlask &&
+            Boolean(state.installedSnap) &&
+            !shouldDisplayReconnectButton(state.installedSnap)
+          }
+        />
+        <Card
+          content={{
+            title: 'Send latest Notification to Metamask',
+            description:
+              'Clicking this button will send in App Metamask notifications',
+            button: (
+              <LatestNotificationsButton
+                onClick={handleLatestNotificationsClick}
                 disabled={!state.installedSnap}
               />
             ),

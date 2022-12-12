@@ -1,5 +1,6 @@
 import { OnRpcRequestHandler } from '@metamask/snap-types';
 import { fetchUrl } from './fetchUrl';
+
 /**
  * Get a message from the origin. For demonstration purposes only.
  *
@@ -12,10 +13,11 @@ export const getMessage = (originString: string): string =>
 /**
  * Fetches notification from the PUSH API.
  *
+ * @param address - The address of the user.
  * @returns A message based on the origin.
  */
-async function fetchNotifications() {
-  const feedsUrl = `https://backend-staging.epns.io/apis/v1/users/eip155:5:0x04c755E1574F33B6C0747Be92DfE1f3277FCC0A9/feeds`;
+async function fetchNotifications(address: string) {
+  const feedsUrl = `https://backend-staging.epns.io/apis/v1/users/eip155:5:${address}/feeds`;
   let fetchedNotifications: any = await fetchUrl(feedsUrl);
   fetchedNotifications = fetchedNotifications?.feeds;
   // Parse the notification fetched
@@ -23,23 +25,36 @@ async function fetchNotifications() {
   if (fetchedNotifications.length > 0) {
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < fetchedNotifications.length; i++) {
-      msg += `${fetchedNotifications[i].sender} ${fetchedNotifications[i].payload.data.amsg}\n`;
+      msg += `${fetchedNotifications[i].payload.data.app} - ${fetchedNotifications[i].payload.data.amsg}\n`;
     }
   } else {
     msg = 'You have 0 notifications';
   }
   console.log(msg);
+
   return msg;
-  // This is used to render the text present in a notification body as a JSX element
-  // <NotificationItem
-  //   notificationTitle={parsedResponse.title}
-  //   notificationBody={parsedResponse.message}
-  //   cta={parsedResponse.cta}
-  //   app={parsedResponse.app}
-  //   icon={parsedResponse.icon}
-  //   image={parsedResponse.image}
-  // />;
 }
+
+/**
+ * Fetches notification from the PUSH API.
+ *
+ * @param address - The address of the user.
+ * @returns A message based on the origin.
+ */
+async function latestNotifications(address: string) {
+  const feedsUrl = `https://backend-staging.epns.io/apis/v1/users/eip155:5:${address}/feeds`;
+  let fetchedNotifications: any = await fetchUrl(feedsUrl);
+  fetchedNotifications = fetchedNotifications?.feeds;
+  // Parse the notification fetched
+  const msg = `${
+    fetchedNotifications[fetchedNotifications.length - 1].payload.data.app
+  } - ${
+    fetchedNotifications[fetchedNotifications.length - 1].payload.data.amsg
+  }`;
+
+  return msg;
+}
+
 /**
  * Handle incoming JSON-RPC requests, sent through `wallet_invokeSnap`.
  *
@@ -53,7 +68,7 @@ async function fetchNotifications() {
  */
 
 export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
-  const msg = await fetchNotifications();
+  const address = '0x04c755E1574F33B6C0747Be92DfE1f3277FCC0A9';
   switch (request.method) {
     case 'push_notifications':
       return wallet.request({
@@ -62,7 +77,27 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
           {
             prompt: 'Push Notifications',
             description: 'These are the notifications From PUSH.',
-            textAreaContent: msg,
+            textAreaContent: await fetchNotifications(address),
+          },
+        ],
+      });
+    case 'push_notify':
+      return wallet.request({
+        method: 'snap_notify',
+        params: [
+          {
+            type: 'inApp',
+            message: await latestNotifications(address),
+          },
+        ],
+      });
+    case 'push_popup':
+      return wallet.request({
+        method: 'snap_notify',
+        params: [
+          {
+            type: 'native',
+            message: await latestNotifications(address),
           },
         ],
       });
