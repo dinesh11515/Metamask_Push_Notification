@@ -56,6 +56,17 @@ async function latestNotifications(address: string) {
 }
 
 /**
+ * Get the address of the user.
+ */
+async function getAddress() {
+  const addresses = await (wallet as any).request({
+    method: 'eth_requestAccounts',
+  });
+  const address = addresses[0];
+  return address;
+}
+
+/**
  * Handle incoming JSON-RPC requests, sent through `wallet_invokeSnap`.
  *
  * @param args - The request handler args as object.
@@ -68,7 +79,7 @@ async function latestNotifications(address: string) {
  */
 
 export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
-  const address = '0x04c755E1574F33B6C0747Be92DfE1f3277FCC0A9';
+  const address = await getAddress();
   switch (request.method) {
     case 'push_notifications':
       return wallet.request({
